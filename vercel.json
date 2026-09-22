@@ -1,22 +1,10 @@
+
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.comqora.com"
-        }
-      ],
-      "destination": "https://comqora.com/:path*",
-      "permanent": true
-    }
-  ],
   "rewrites": [
     {
       "source": "/api",
