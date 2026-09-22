@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { AuthProvider } from './features/auth/AuthContext'
 import App from './App'
+import AppErrorBoundary from './components/AppErrorBoundary'
 import { ThemeProvider, useTheme } from './components/Theme'
 import './styles.css'
 import './enhancements.css'
@@ -22,7 +23,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <App />
+            <AppErrorBoundary>
+              <App />
+            </AppErrorBoundary>
             <Notifications />
           </AuthProvider>
         </BrowserRouter>
