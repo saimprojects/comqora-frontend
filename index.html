@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#4055d9" />
+    <meta
+      name="description"
+      content="Comqora — orders, inventory, courier tracking and profit in one connected commerce workspace."
+    />
+    <link rel="icon" href="/brand/comqora-symbol-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/brand/comqora-symbol-64.png" type="image/png" sizes="64x64" />
+    <link rel="apple-touch-icon" href="/brand/comqora-symbol-180.png" sizes="180x180" />
+    <title>Comqora · Commerce, at your core.</title>
+    <script>
+      // Apply saved appearance before the application stylesheet paints.
+      try {
+        const preference =
+          localStorage.getItem('comqora-theme') || localStorage.getItem('sellflow-theme')
+        document.documentElement.dataset.theme = preference === 'dark' ? 'dark' : 'light'
+      } catch {
+        /* Storage can be disabled by the browser. */
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
