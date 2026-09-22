@@ -10,6 +10,7 @@ export default function AuthPage() {
     navigate = useNavigate(),
     [params] = useSearchParams()
   const { refresh } = useAuth()
+  const [createdAccount, setCreatedAccount] = useState(null)
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [message, setMessage] = useState(''),
@@ -41,8 +42,8 @@ export default function AuthPage() {
         setMessage(r.detail)
       } else {
         const result = await post(register ? 'auth/register/' : 'auth/login/', data)
-        if (register && result.verification_email_sent === false) {
-          setMessage(`Your account was created. ${result.email_warning} ${result.detail}`)
+        if (register) {
+          setCreatedAccount(result)
           return
         }
         if (result.approval_required) {
@@ -149,104 +150,125 @@ export default function AuthPage() {
                       ? 'Verify this email address to activate your account.'
                       : 'Sign in to keep your business moving forward.'}
           </p>
-          <form onSubmit={submit} className="auth-form">
-            {register && (
-              <>
-                <Field label="Your name">
+          {register && createdAccount ? (
+            <div className="auth-form" role="status">
+              <h3>Your account was created</h3>
+              {createdAccount.verification_required && (
+                <p>
+                  {createdAccount.verification_email_sent
+                    ? 'Check your inbox and spam folder. Open the verification link, then sign in to choose your plan.'
+                    : 'Your account is saved, but we could not send the verification email. Request a new link below, or contact support if it still does not arrive.'}
+                </p>
+              )}
+              {!createdAccount.verification_required && (
+                <p>Sign in to choose your plan and submit payment proof.</p>
+              )}
+              <Link to="/login">Continue to sign in</Link>
+              {createdAccount.verification_required && (
+                <Link to="/resend-verification">Request a new verification email</Link>
+              )}
+              <p>Dashboard access opens after your payment is approved.</p>
+            </div>
+          ) : (
+            <form onSubmit={submit} className="auth-form">
+              {register && (
+                <>
+                  <Field label="Your name">
+                    <input
+                      name="first_name"
+                      required
+                      autoComplete="given-name"
+                      placeholder="Ahmed Khan"
+                    />
+                  </Field>
+                  <Field label="Business name">
+                    <input
+                      name="workspace_name"
+                      required
+                      autoComplete="organization"
+                      placeholder="Your brand or store"
+                    />
+                  </Field>
+                </>
+              )}
+              {!reset && !verify && (
+                <Field label="Email address">
                   <input
-                    name="first_name"
+                    type="email"
+                    name="email"
                     required
-                    autoComplete="given-name"
-                    placeholder="Ahmed Khan"
+                    autoComplete="email"
+                    placeholder="you@yourbusiness.com"
                   />
                 </Field>
-                <Field label="Business name">
-                  <input
-                    name="workspace_name"
-                    required
-                    autoComplete="organization"
-                    placeholder="Your brand or store"
-                  />
+              )}
+              {!forgot && !verify && (
+                <Field label={reset ? 'New password' : 'Password'}>
+                  <span className="password-input">
+                    <input
+                      name="password"
+                      type={show ? 'text' : 'password'}
+                      required
+                      minLength={register || reset ? 10 : undefined}
+                      autoComplete={register || reset ? 'new-password' : 'current-password'}
+                      placeholder={
+                        register || reset ? 'At least 10 characters' : 'Enter your password'
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShow(!show)}
+                      aria-label={show ? 'Hide password' : 'Show password'}
+                    >
+                      {show ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </span>
                 </Field>
-              </>
-            )}
-            {!reset && !verify && (
-              <Field label="Email address">
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="email"
-                  placeholder="you@yourbusiness.com"
-                />
-              </Field>
-            )}
-            {!forgot && !verify && (
-              <Field label={reset ? 'New password' : 'Password'}>
-                <span className="password-input">
-                  <input
-                    name="password"
-                    type={show ? 'text' : 'password'}
-                    required
-                    minLength={register || reset ? 10 : undefined}
-                    autoComplete={register || reset ? 'new-password' : 'current-password'}
-                    placeholder={
-                      register || reset ? 'At least 10 characters' : 'Enter your password'
-                    }
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShow(!show)}
-                    aria-label={show ? 'Hide password' : 'Show password'}
-                  >
-                    {show ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </span>
-              </Field>
-            )}
-            {!register && !forgot && !reset && !verify && (
-              <div className="auth-forgot">
-                <span>
-                  <ShieldCheck size={14} /> Secure session
-                </span>
-                <Link to="/forgot-password">Forgot password?</Link>
-              </div>
-            )}
-            {error && (
-              <p role="alert" className="form-error">
-                {error}
-              </p>
-            )}
-            {message && (
-              <p role="status" className="form-success">
-                {message}
-              </p>
-            )}
-            <Button loading={busy} type="submit">
-              {resend
-                ? 'Send verification link'
-                : register
-                  ? 'Create your workspace'
-                  : forgot
-                    ? 'Send reset link'
-                    : reset
-                      ? 'Reset password'
-                      : verify
-                        ? 'Verify email'
-                        : 'Sign in to your workspace'}
-              <ArrowRight size={17} />
-            </Button>
-            {(forgot || reset || verify) && (
-              <Link className="back-login" to="/login">
-                Back to sign in
-              </Link>
-            )}
-            {!register && !forgot && !reset && (
-              <Link className="back-login" to="/resend-verification">
-                Need a new verification email?
-              </Link>
-            )}
-          </form>
+              )}
+              {!register && !forgot && !reset && !verify && (
+                <div className="auth-forgot">
+                  <span>
+                    <ShieldCheck size={14} /> Secure session
+                  </span>
+                  <Link to="/forgot-password">Forgot password?</Link>
+                </div>
+              )}
+              {error && (
+                <p role="alert" className="form-error">
+                  {error}
+                </p>
+              )}
+              {message && (
+                <p role="status" className="form-success">
+                  {message}
+                </p>
+              )}
+              <Button loading={busy} type="submit">
+                {resend
+                  ? 'Send verification link'
+                  : register
+                    ? 'Create your workspace'
+                    : forgot
+                      ? 'Send reset link'
+                      : reset
+                        ? 'Reset password'
+                        : verify
+                          ? 'Verify email'
+                          : 'Sign in to your workspace'}
+                <ArrowRight size={17} />
+              </Button>
+              {(forgot || reset || verify) && (
+                <Link className="back-login" to="/login">
+                  Back to sign in
+                </Link>
+              )}
+              {!register && !forgot && !reset && (
+                <Link className="back-login" to="/resend-verification">
+                  Need a new verification email?
+                </Link>
+              )}
+            </form>
+          )}
           <p className="auth-security">
             <ShieldCheck size={15} /> Your data stays in your workspace. Always.
           </p>
