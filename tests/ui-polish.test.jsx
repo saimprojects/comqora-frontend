@@ -177,6 +177,28 @@ it('routes the security action to the real password form and gives staff safe cl
   expect(screen.getByLabelText('Current password')).toBeTruthy()
 })
 
+it('requires an email code before submitting the password change', async () => {
+  const user = userEvent.setup()
+  post.mockResolvedValue({ detail: 'Code sent.' })
+  mount(<Settings />)
+  await user.click(screen.getByRole('button', { name: 'Sign out & safety' }))
+  await user.click(screen.getByRole('button', { name: 'Change password' }))
+  await user.type(screen.getByLabelText('Current password'), 'CurrentPassword!123')
+  await user.type(screen.getByLabelText(/New password/), 'NewPassword!123')
+  await user.click(screen.getByRole('button', { name: 'Send email OTP' }))
+  expect(post).toHaveBeenLastCalledWith('auth/change-password/otp/', {
+    current_password: 'CurrentPassword!123',
+  })
+  await user.type(await screen.findByLabelText('Email verification code'), '123456')
+  await user.click(screen.getByRole('button', { name: 'Verify OTP and update password' }))
+  expect(post).toHaveBeenLastCalledWith('auth/change-password/', {
+    current_password: 'CurrentPassword!123',
+    password: 'NewPassword!123',
+    otp: '123456',
+  })
+  expect(await screen.findByText('Password updated successfully.')).toBeTruthy()
+})
+
 it('keeps the enlarged new-customer control as a non-submit toggle', async () => {
   const user = userEvent.setup()
   mount(<NewOrder onClose={vi.fn()} />)

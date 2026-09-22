@@ -243,7 +243,7 @@ it('manual WAHA sending opens an editable confirmation before queueing', async (
       }}
     />,
   )
-  await user.click(screen.getByRole('button', { name: 'Send via WAHA' }))
+  await user.click(screen.getByRole('button', { name: 'Send Auto Massage' }))
   expect(screen.getByLabelText('Message').value).toContain('out for delivery')
   await user.click(screen.getByRole('button', { name: 'Confirm & queue message' }))
   await waitFor(() =>

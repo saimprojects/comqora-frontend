@@ -191,3 +191,54 @@
     margin-left: 0;
   }
 }
+.billing-banks {
+  border: 0;
+  padding: 0;
+  margin: 24px 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+.billing-banks legend {
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.billing-card .billing-bank {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 22px 16px;
+  border: 2px solid var(--line, #ddd);
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.billing-bank.is-selected {
+  border-color: #6860da;
+  background: color-mix(in srgb, #6860da 8%, var(--surface, white));
+}
+.billing-bank:focus-within {
+  outline: 2px solid #6860da;
+  outline-offset: 3px;
+}
+.billing-card .billing-bank input {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  accent-color: #6860da;
+}
+.billing-bank img {
+  object-fit: contain;
+}
+.billing-bank span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}

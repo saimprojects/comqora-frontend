@@ -43,7 +43,7 @@ export default function ManualMessage({ order }) {
         }}
       >
         <Send size={16} />
-        Send via WAHA
+        Send Auto Massage
       </Button>
       {open && (
         <Modal title="Send WhatsApp update" onClose={() => setOpen(false)}>

@@ -18,7 +18,15 @@ beforeEach(() => {
   vi.clearAllMocks()
   auth.user = { role: 'owner', has_dashboard_access: false }
   checkout = {
-    banks: [{ id: 1, bank_name: 'Test Bank', account_title: 'Comqora' }],
+    banks: [
+      {
+        id: 1,
+        bank_name: 'Test Bank',
+        account_title: 'Comqora',
+        icon_url: '/api/billing/banks/1/icon/',
+      },
+      { id: 2, bank_name: 'Other Bank', account_title: 'Comqora' },
+    ],
     payments: [],
     subscription: null,
   }
@@ -62,7 +70,10 @@ it('creates a checkout and submits proof without granting access', async () => {
   })
   mount()
   await user.click(await screen.findByRole('button', { name: 'Choose Ultra', exact: true }))
-  await user.selectOptions(screen.getByLabelText('Payment account'), '1')
+  expect(screen.queryByRole('combobox')).toBeNull()
+  expect(screen.getAllByRole('radio')).toHaveLength(2)
+  expect(document.querySelector('img[src="/api/billing/banks/1/icon/"]')).toBeTruthy()
+  await user.click(screen.getByRole('radio', { name: 'Test Bank Comqora' }))
   await user.click(screen.getByRole('button', { name: 'Continue to checkout' }))
   expect(await screen.findByText('123456')).toBeTruthy()
   expect(post).toHaveBeenCalledWith('billing/checkout/', { plan: '1', bank: '1' })

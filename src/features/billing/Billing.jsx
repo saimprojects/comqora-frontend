@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Sparkles, ShieldCheck } from 'lucide-react'
+import { Check, Sparkles, ShieldCheck, Landmark } from 'lucide-react'
 import { api, post, privateBlob } from '../../lib/api'
 import { useAuth } from '../auth/AuthContext'
 import { Button, Loading, ErrorState } from '../../components/ui'
@@ -182,15 +182,32 @@ export default function Billing() {
           <p>Select a plan and a payment account to create your checkout.</p>
           {billing.data.banks.length ? (
             <>
-              <label htmlFor="billing-bank">Payment account</label>
-              <select id="billing-bank" value={bankId} onChange={(e) => setBankId(e.target.value)}>
-                <option value="">Choose a bank</option>
+              <fieldset className="billing-banks">
+                <legend>Choose your payment bank</legend>
                 {billing.data.banks.map((bank) => (
-                  <option key={bank.id} value={bank.id}>
-                    {bank.bank_name} — {bank.account_title}
-                  </option>
+                  <label
+                    key={bank.id}
+                    className={`billing-bank ${bankId === String(bank.id) ? 'is-selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment-bank"
+                      aria-label={`${bank.bank_name} ${bank.account_title}`}
+                      value={bank.id}
+                      checked={bankId === String(bank.id)}
+                      disabled={busy}
+                      onChange={() => setBankId(String(bank.id))}
+                    />
+                    {bank.icon_url ? (
+                      <img src={bank.icon_url} alt="" width="56" height="56" />
+                    ) : (
+                      <Landmark size={40} aria-hidden="true" />
+                    )}
+                    <strong>{bank.bank_name}</strong>
+                    <span>{bank.account_title}</span>
+                  </label>
                 ))}
-              </select>
+              </fieldset>
               <p>
                 Renewing the same active plan adds a month to its expiry. Changing plans starts a
                 new month on approval and replaces the remaining period; no automatic prorating.

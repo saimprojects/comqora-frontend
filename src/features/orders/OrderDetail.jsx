@@ -364,7 +364,7 @@ export default function OrderDetail() {
                     rel="noreferrer"
                   >
                     <MessageCircle size={16} />
-                    Open WhatsApp
+                    Send manual massage
                     <ArrowUpRight size={14} />
                   </a>
                   {['owner', 'manager'].includes(user?.role) && <ManualMessage order={o} />}

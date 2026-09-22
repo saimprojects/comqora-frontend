@@ -24,6 +24,8 @@ import { useTheme } from '../../components/Theme'
 import { Segmented } from '../../components/PricingControls'
 import BrandSettings from '../printing/BrandSettings'
 export default function Settings() {
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpNotice, setOtpNotice] = useState('')
   const { theme, setTheme } = useTheme()
   const { user, refresh, signOut } = useAuth(),
     client = useQueryClient()
@@ -44,6 +46,14 @@ export default function Settings() {
     const form = e.currentTarget,
       data = Object.fromEntries(new FormData(form))
     try {
+      if (path === 'auth/change-password/' && !otpSent) {
+        const result = await post('auth/change-password/otp/', {
+          current_password: data.current_password,
+        })
+        setOtpSent(true)
+        setOtpNotice(result.detail)
+        return
+      }
       const response = await (method === 'patch' ? patch : post)(path, data)
       if (path === 'auth/me/') await refresh()
       toast.success(response.detail || 'Changes saved')
@@ -51,7 +61,11 @@ export default function Settings() {
         setInvite(false)
         await client.invalidateQueries({ queryKey: ['team'] })
       }
-      if (path === 'auth/change-password/') form.reset()
+      if (path === 'auth/change-password/') {
+        form.reset()
+        setOtpSent(false)
+        setOtpNotice('Password updated successfully.')
+      }
       if (path === 'workspace/') {
         await refresh()
       }
@@ -314,6 +328,48 @@ export default function Settings() {
                 </div>
               </div>
               <form onSubmit={(e) => save(e, 'auth/change-password/')}>
+                <p>
+                  A verification code will be sent to your account email before your password
+                  changes.
+                </p>
+                {otpNotice && <p role="status">{otpNotice}</p>}
+                {otpSent && (
+                  <>
+                    <Field label="Email verification code">
+                      <input
+                        name="otp"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        pattern="[0-9]{6}"
+                        maxLength={6}
+                        required
+                        placeholder="6-digit code"
+                      />
+                    </Field>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={busy}
+                      onClick={async (e) => {
+                        const form = e.currentTarget.form
+                        setBusy(true)
+                        setError('')
+                        try {
+                          const result = await post('auth/change-password/otp/', {
+                            current_password: form.elements.current_password.value,
+                          })
+                          setOtpNotice(result.detail)
+                        } catch (err) {
+                          setError(err.message)
+                        } finally {
+                          setBusy(false)
+                        }
+                      }}
+                    >
+                      Resend code
+                    </Button>
+                  </>
+                )}
                 <Field label="Current password">
                   <input
                     name="current_password"
@@ -338,7 +394,7 @@ export default function Settings() {
                 <div className="modal-actions">
                   <Button loading={busy} type="submit">
                     <LockKeyhole size={16} />
-                    Update password
+                    {otpSent ? 'Verify OTP and update password' : 'Send email OTP'}
                   </Button>
                 </div>
               </form>
