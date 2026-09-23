@@ -109,7 +109,7 @@ export default function Contact() {
 export function NotFound() {
   return (
     <section className="public-section public-container public-empty">
-      <PageMeta title="Page not found" />
+      <PageMeta title="Page not found" noindex />
       <span className="section-kicker">404 / A LITTLE OFF TRACK</span>
       <h1>
         Let’s get you

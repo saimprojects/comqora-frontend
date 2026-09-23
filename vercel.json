@@ -1,11 +1,35 @@
-
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.comqora.com"
+        }
+      ],
+      "destination": "https://comqora.com/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://comqora.up.railway.app/api/public/sitemap.xml"
+    },
+    {
+      "source": "/sitemap-pages.xml",
+      "destination": "https://comqora.up.railway.app/api/public/sitemap-pages.xml"
+    },
+    {
+      "source": "/sitemap-blog-:page(\\d+).xml",
+      "destination": "https://comqora.up.railway.app/api/public/sitemap-blog-:page.xml"
+    },
     {
       "source": "/api",
       "destination": "https://comqora.up.railway.app/api/"
@@ -32,6 +56,28 @@
     }
   ],
   "headers": [
+    {
+      "source": "/:private(login|register|forgot-password|reset-password|verify-email|resend-verification|dashboard|billing|orders|products|categories|inventory|packaging|couriers|customers|marketing|expenses|settings|analytics|manager|whatsapp|bank|whatsapp-unsubscribe|admin|api)(/:rest*)?",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap:rest(.*).xml",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

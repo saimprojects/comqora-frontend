@@ -15,6 +15,10 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       proxy: {
+        '/sitemap': {
+          target: 'http://127.0.0.1:8000',
+          rewrite: (path) => `/api/public${path}`,
+        },
         '/api': 'http://127.0.0.1:8000',
         '/admin': 'http://127.0.0.1:8000',
         '/static': 'http://127.0.0.1:8000',

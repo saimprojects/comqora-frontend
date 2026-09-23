@@ -122,7 +122,7 @@ export function BlogArticle() {
   if (query.error)
     return (
       <section className="public-section public-container">
-        <PageMeta title="Article unavailable" />
+        <PageMeta title="Article unavailable" noindex />
         <ErrorState error={query.error} retry={query.refetch} />
         <Link to="/blog" className="text-link">
           Back to the journal
@@ -132,7 +132,7 @@ export function BlogArticle() {
   const post = query.data
   return (
     <article className="article-page public-container">
-      <PageMeta title={post.title} description={post.excerpt} />
+      <PageMeta title={post.title} description={post.excerpt} article={post} />
       <Link to="/blog" className="text-link">
         <ArrowLeft size={15} /> Back to the journal
       </Link>

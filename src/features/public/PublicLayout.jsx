@@ -6,26 +6,75 @@ import ThemeToggle from '../../components/ThemeToggle'
 import { useAuth } from '../auth/AuthContext'
 import './public.css'
 
-export function PageMeta({ title, description }) {
+export function PageMeta({ title, description, article, noindex = false }) {
   const location = useLocation()
+  const articleJson = article ? JSON.stringify(article) : null
   useEffect(() => {
-    document.title = `${title} · Comqora`
-    document
-      .querySelector('meta[name="description"]')
-      ?.setAttribute(
-        'content',
-        description ||
-          'Comqora brings orders, inventory, courier tracking and profit into one connected workspace.',
-      )
-    let canonical = document.querySelector('link[rel="canonical"]')
-    if (!canonical) {
-      canonical = document.createElement('link')
-      canonical.rel = 'canonical'
-      document.head.appendChild(canonical)
+    const previousTitle = document.title
+    const undo = []
+    const setMeta = (attribute, key, content) => {
+      let node = document.head.querySelector(`meta[${attribute}="${key}"]`)
+      const existed = Boolean(node)
+      const previous = node?.getAttribute('content')
+      if (!node) {
+        node = document.createElement('meta')
+        node.setAttribute(attribute, key)
+        document.head.appendChild(node)
+      }
+      node.setAttribute('content', content)
+      undo.push(() => {
+        if (existed) node.setAttribute('content', previous || '')
+        else node.remove()
+      })
     }
-    canonical.href = `https://comqora.com${location.pathname}`
-    return () => canonical.remove()
-  }, [title, description, location.pathname])
+    const summary =
+      description ||
+      'Comqora brings orders, inventory, courier tracking and profit into one connected workspace.'
+    const path = location.pathname.replace(/\/+$/, '') || '/'
+    const url = `https://comqora.com${path}`
+    document.title = `${title} · Comqora`
+    setMeta('name', 'description', summary)
+    setMeta('name', 'robots', noindex ? 'noindex, follow' : 'index, follow')
+    setMeta('property', 'og:title', document.title)
+    setMeta('property', 'og:description', summary)
+    setMeta('property', 'og:url', url)
+    setMeta('property', 'og:site_name', 'Comqora')
+    setMeta('property', 'og:type', articleJson ? 'article' : 'website')
+    setMeta('name', 'twitter:card', 'summary')
+    setMeta('name', 'twitter:title', document.title)
+    setMeta('name', 'twitter:description', summary)
+    const canonical = document.createElement('link')
+    canonical.rel = 'canonical'
+    canonical.href = url
+    document.head.appendChild(canonical)
+    let structured
+    if (articleJson) {
+      const post = JSON.parse(articleJson)
+      setMeta('property', 'article:published_time', post.published_at)
+      setMeta('property', 'article:modified_time', post.updated_at)
+      structured = document.createElement('script')
+      structured.type = 'application/ld+json'
+      structured.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.title,
+        description: post.excerpt,
+        datePublished: post.published_at,
+        dateModified: post.updated_at,
+        author: { '@type': 'Person', name: post.author },
+        publisher: { '@type': 'Organization', name: 'Comqora', url: 'https://comqora.com/' },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+        articleSection: post.category,
+      })
+      document.head.appendChild(structured)
+    }
+    return () => {
+      document.title = previousTitle
+      canonical.remove()
+      structured?.remove()
+      undo.forEach((restore) => restore())
+    }
+  }, [title, description, location.pathname, articleJson, noindex])
   return null
 }
 

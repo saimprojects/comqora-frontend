@@ -44,9 +44,21 @@ it('compiles valid routes and disables private CDN caching', () => {
   }
 })
 
-it('uses comqora.com for the public sitemap and www redirect', () => {
-  expect(readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8')).toContain(
-    'https://comqora.com/pricing',
+it('routes live sitemaps before the SPA and keeps the canonical www redirect', () => {
+  const routes = convertRewrites(config.rewrites)
+  for (const path of [
+    '/sitemap.xml',
+    '/sitemap-pages.xml',
+    '/sitemap-blog-1.xml',
+    '/sitemap-blog-20.xml',
+  ]) {
+    const rule = routes.find((route) => new RegExp(route.src).test(path))
+    expect(path.replace(new RegExp(rule.src), rule.dest)).toBe(
+      `https://comqora.up.railway.app/api/public${path}`,
+    )
+  }
+  expect(readFileSync(new URL('../public/robots.txt', import.meta.url), 'utf8')).toContain(
+    'Sitemap: https://comqora.com/sitemap.xml',
   )
   expect(config.redirects[0].destination).toBe('https://comqora.com/:path*')
 })

@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Allow: /api/public/blog/
 Disallow: /admin/
 Disallow: /billing
 Disallow: /dashboard
