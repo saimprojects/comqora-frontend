@@ -179,7 +179,13 @@ function Connection({ data, refresh }) {
           {error}
         </p>
       )}
-      {data.account?.last_error && <p className="form-error">{data.account.last_error}</p>}
+      {data.account?.last_error && !error && (
+        <p className="form-warning">
+          Last saved operation error: {data.account.last_error}
+          <br />
+          This may be from an earlier attempt. Use Refresh connection to check current access.
+        </p>
+      )}
     </section>
   )
 }
@@ -932,10 +938,20 @@ function Outbox() {
                   </small>
                 </td>
                 <td>
-                  {m.error ||
-                    (m.sent_at
-                      ? new Date(m.sent_at).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' })
-                      : 'Queued')}
+                  {m.error ? (
+                    <>
+                      <small className="table-sub">
+                        {m.attempted_at
+                          ? `Send attempt · ${new Date(m.attempted_at).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' })} PKT`
+                          : 'Last recorded error'}
+                      </small>
+                      {m.error}
+                    </>
+                  ) : m.sent_at ? (
+                    new Date(m.sent_at).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' })
+                  ) : (
+                    'Queued'
+                  )}
                   {m.state === 'UNKNOWN' && (
                     <small className="table-sub">
                       WAHA did not confirm the send. The message may already have reached WhatsApp.

@@ -232,7 +232,8 @@ export default function OrderDetail() {
               {o.tracking?.configured && o.tracking_mode === 'AUTO' && (
                 <p>
                   Via {o.tracking.source === 'postex' ? 'PostEx' : 'Run Courier'} · checks every{' '}
-                  {o.tracking.poll_seconds}s while unresolved · page refreshes every 15s.
+                  {o.tracking.poll_seconds}s while unresolved; retries slow down after failures ·
+                  page refreshes every 15s.
                 </p>
               )}
               {o.tracking?.configured &&
@@ -249,8 +250,16 @@ export default function OrderDetail() {
                   ? new Date(o.tracking_checked_at).toLocaleString('en-GB', {
                       timeZone: 'Asia/Karachi',
                     })
-                  : 'Not checked yet'}
+                  : 'No successful check yet'}
               </p>
+              {o.tracking_attempted_at && (
+                <p>
+                  Last attempt:{' '}
+                  {new Date(o.tracking_attempted_at).toLocaleString('en-GB', {
+                    timeZone: 'Asia/Karachi',
+                  })}
+                </p>
+              )}
               {o.tracking_next_sync_at && (
                 <p>
                   Next check due:{' '}
