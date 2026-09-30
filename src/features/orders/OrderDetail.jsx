@@ -466,6 +466,12 @@ export default function OrderDetail() {
                   </p>
                 )}
                 <p>Base: {money(o.courier_snapshot.base_rate)}</p>
+                {o.courier_snapshot.percentage_basis_type === 'DISCOUNTED_PRODUCT_TOTAL' && (
+                  <p>
+                    Percentage basis (products after discount):{' '}
+                    {money(o.courier_snapshot.percentage_basis)}
+                  </p>
+                )}
                 <p>
                   Region:{' '}
                   {(o.courier_snapshot.delivery_zone || 'Standard contract').replaceAll('_', ' ')}
