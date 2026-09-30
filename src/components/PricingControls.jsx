@@ -119,7 +119,7 @@ export function CostsEditor({ value, onChange, percentages = false, label = 'Oth
       ))}
       <small className="muted">
         {percentages
-          ? 'Each percentage applies to base shipping + extra weight, independently. Taxes and other fees are not compounded.'
+          ? 'Each percentage applies to the product total after discount. Shipping and other charges are excluded; percentages are not compounded.'
           : 'These amounts are total costs, not per-unit costs.'}
       </small>
     </section>

@@ -46,6 +46,7 @@ export const configs = {
     title: 'Stock you can count on.',
     description: 'Track purchase batches, landed costs, and FIFO stock reservations.',
     singular: 'stock receipt',
+    editable: true,
     fields: [
       { key: 'product', label: 'Product', type: 'product', required: true },
       { key: 'reference', label: 'Purchase reference', required: true },
@@ -165,7 +166,12 @@ export const configs = {
       { key: 'base_weight', label: 'Base weight (kg)', type: 'number', min: 0.01, initial: 0.5 },
       { key: 'base_rate', label: 'Base rate (PKR)', type: 'number', required: true },
       { key: 'additional_kg_rate', label: 'Each additional kg (PKR)', type: 'number', initial: 0 },
-      { key: 'tax_percent', label: 'Tax on shipping (%)', type: 'number', initial: 0 },
+      {
+        key: 'tax_percent',
+        label: 'Tax on discounted product total (%)',
+        type: 'number',
+        initial: 0,
+      },
       { key: 'fixed_charge', label: 'Other fixed charge (PKR)', type: 'number', initial: 0 },
       { key: 'return_rate', label: 'Return charge (PKR)', type: 'number', initial: 0 },
       { key: 'is_active', label: 'Contract is active', type: 'checkbox', initial: 1 },

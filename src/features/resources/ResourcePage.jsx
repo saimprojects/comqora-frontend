@@ -44,6 +44,7 @@ export default function ResourcePage({ resource }) {
   const canWrite =
     ['owner', 'manager'].includes(user.role) || (resource === 'customers' && user.role === 'staff')
   const [expensePayment, setExpensePayment] = useState(null)
+  const [quoteProductTotal, setQuoteProductTotal] = useState('0')
   const [printOpen, setPrintOpen] = useState(false)
   const bankAccounts = useQuery({
     queryKey: ['bank', 'accounts'],
@@ -100,10 +101,10 @@ export default function ResourcePage({ resource }) {
     enabled: resource === 'inventory' && editing !== null,
   })
   const quote = useQuery({
-    queryKey: ['courier-quote', quoteCourier?.id, weight, quoteZone],
+    queryKey: ['courier-quote', quoteCourier?.id, weight, quoteZone, quoteProductTotal],
     queryFn: () =>
       api(
-        `couriers/${quoteCourier.id}/quote/?weight=${encodeURIComponent(weight)}&zone=${quoteZone}`,
+        `couriers/${quoteCourier.id}/quote/?weight=${encodeURIComponent(weight)}&zone=${quoteZone}&product_total=${encodeURIComponent(quoteProductTotal || '0')}`,
       ),
     enabled: !!quoteCourier && Number(weight) > 0,
   })
@@ -545,7 +546,7 @@ export default function ResourcePage({ resource }) {
                           <button
                             className="icon-button"
                             onClick={() => open(row)}
-                            aria-label={`Edit ${row.name}`}
+                            aria-label={`Edit ${row.name || row.reference}`}
                           >
                             <Pencil size={15} />
                           </button>
@@ -610,7 +611,7 @@ export default function ResourcePage({ resource }) {
           title={`${editing.id ? 'Edit' : 'Add'} ${config.singular}`}
           description={
             resource === 'inventory'
-              ? 'Landed unit cost includes purchase, transport, and import costs. Receipts are immutable.'
+              ? 'Correct receipt quantities and costs here. Units used or reserved by orders are protected. Cost corrections apply to future orders; existing orders keep their recorded costs.'
               : `Keep your ${resource} up to date.`
           }
           onClose={() => !busy && setEditing(null)}
@@ -956,9 +957,18 @@ export default function ResourcePage({ resource }) {
       {quoteCourier && (
         <Modal
           title={`${quoteCourier.name} · Shipping calculator`}
-          description="Contract estimate, including weight charges and taxes."
+          description="Percentage taxes and custom fees apply to the product total after discount."
           onClose={() => setQuoteCourier(null)}
         >
+          <Field label="Product total after discount (PKR)">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={quoteProductTotal}
+              onChange={(e) => setQuoteProductTotal(e.target.value)}
+            />
+          </Field>
           <Field label="Parcel weight (kg)">
             <input
               type="number"
@@ -979,6 +989,7 @@ export default function ResourcePage({ resource }) {
             <div className="summary-list">
               {[
                 ['Base rate', quote.data.base_rate],
+                ['Percentage calculation basis', quote.data.percentage_basis],
                 ['Additional weight', quote.data.extra_weight_charge],
                 ['Tax', quote.data.tax],
                 ['Fixed charge', quote.data.fixed_charge],

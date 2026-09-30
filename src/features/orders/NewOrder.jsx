@@ -43,10 +43,16 @@ export default function NewOrder({ onClose }) {
       }
     },
   })
+  const productTotal = Math.max(
+    0,
+    orderPreview({ items, products: options.data?.products, discount }).netSale,
+  ).toFixed(2)
   const quote = useQuery({
-    queryKey: ['order-quote', courier, weight, zone],
+    queryKey: ['order-quote', courier, weight, zone, productTotal],
     queryFn: () =>
-      api(`couriers/${courier}/quote/?weight=${encodeURIComponent(weight)}&zone=${zone}`),
+      api(
+        `couriers/${courier}/quote/?weight=${encodeURIComponent(weight)}&zone=${zone}&product_total=${productTotal}`,
+      ),
     enabled: !!courier && Number(weight) > 0,
   })
   const packRows = (options.data?.packaging || []).map((p) => ({
@@ -338,7 +344,7 @@ export default function NewOrder({ onClose }) {
             <div className="quote-strip">
               <span>Shipping · {zone.replaceAll('_', ' ').toLowerCase()}</span>
               <strong>{money(quote.data.total)}</strong>
-              <small>Includes weight, tax and custom courier fees.</small>
+              <small>Percentage taxes and fees use the product total after discount.</small>
             </div>
           )}
           <div className="form-section-heading">

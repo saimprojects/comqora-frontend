@@ -936,6 +936,12 @@ function Outbox() {
                     (m.sent_at
                       ? new Date(m.sent_at).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' })
                       : 'Queued')}
+                  {m.state === 'UNKNOWN' && (
+                    <small className="table-sub">
+                      WAHA did not confirm the send. The message may already have reached WhatsApp.
+                      Use Check delivery to look it up; it will not send another copy.
+                    </small>
+                  )}
                 </td>
                 <td>
                   {m.state === 'PENDING' && (

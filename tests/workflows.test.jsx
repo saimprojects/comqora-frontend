@@ -323,6 +323,21 @@ describe('Searchable select', () => {
 })
 
 describe('Order workflow', () => {
+  it('refreshes courier percentages when the product discount changes', async () => {
+    const user = userEvent.setup()
+    mount(<NewOrder onClose={() => {}} />)
+    await screen.findByRole('combobox', { name: 'Customer' })
+    await choose('Product 1', /Headphones/)
+    await choose('Courier contract', /TCS standard/)
+    await waitFor(() =>
+      expect(api).toHaveBeenCalledWith(expect.stringContaining('product_total=1000.00')),
+    )
+    await user.clear(screen.getByLabelText('Discount (PKR)'))
+    await user.type(screen.getByLabelText('Discount (PKR)'), '150')
+    await waitFor(() =>
+      expect(api).toHaveBeenCalledWith(expect.stringContaining('product_total=850.00')),
+    )
+  })
   it('defaults to half kg and one package; toggles added charges and submits consistent prepaid amount', async () => {
     const user = userEvent.setup()
     mount(<NewOrder onClose={() => {}} />)
@@ -362,6 +377,43 @@ describe('Order workflow', () => {
 })
 
 describe('Resource forms', () => {
+  it('opens an existing inventory receipt for editing and patches its costs', async () => {
+    const user = userEvent.setup()
+    api.mockResolvedValue({
+      count: 1,
+      results: [
+        {
+          id: 'batch-1',
+          product: 'product-1',
+          product_name: 'Headphones',
+          reference: 'BATCH-EDIT',
+          purchased_quantity: 10,
+          remaining_quantity: 10,
+          reserved_quantity: 0,
+          purchase_amount: '100',
+          purchase_mode: 'UNIT',
+          unit_cost: '100',
+          transport_cost: '0',
+          import_cost: '0',
+          extra_costs: [],
+          received_at: '2026-09-01',
+        },
+      ],
+    })
+    patch.mockResolvedValue({})
+    mount(<ResourcePage resource="inventory" />)
+    await user.click(await screen.findByRole('button', { name: /Edit/ }))
+    expect(screen.getByLabelText('Purchase reference').value).toBe('BATCH-EDIT')
+    await user.clear(screen.getByLabelText('Purchase cost per unit (PKR)'))
+    await user.type(screen.getByLabelText('Purchase cost per unit (PKR)'), '120')
+    await user.click(screen.getByRole('button', { name: 'Save stock receipt' }))
+    await waitFor(() =>
+      expect(patch).toHaveBeenCalledWith(
+        'stock-batches/batch-1/',
+        expect.objectContaining({ purchase_amount: '120', purchased_quantity: '10' }),
+      ),
+    )
+  })
   it('creates a category inline, selects it and omits variants', async () => {
     const user = userEvent.setup()
     post.mockResolvedValue({ id: 'new-category', name: 'Audio' })
